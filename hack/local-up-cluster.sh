@@ -17,6 +17,7 @@
 # This command builds and runs a local kubernetes cluster. It's just like
 # local-up.sh, but this one launches the three separate binaries.
 # You may need to run this as root to allow kubelet to open docker's socket.
+ALLOW_PRIVILEGED="true"
 DOCKER_OPTS=${DOCKER_OPTS:-""}
 DOCKER_NATIVE=${DOCKER_NATIVE:-""}
 DOCKER=(docker ${DOCKER_OPTS})
@@ -214,7 +215,7 @@ function start_apiserver {
       --address="${API_HOST}" \
       --port="${API_PORT}" \
       --etcd_servers="http://127.0.0.1:4001" \
-      --service-cluster-ip-range="10.0.0.0/24" \
+      --service-cluster-ip-range="10.100.0.0/24" \
       --cors_allowed_origins="${API_CORS_ALLOWED_ORIGINS}" >"${APISERVER_LOG}" 2>&1 &
     APISERVER_PID=$!
 
@@ -242,6 +243,8 @@ function start_kubelet {
         --hostname_override="127.0.0.1" \
         --address="127.0.0.1" \
         --api_servers="${API_HOST}:${API_PORT}" \
+        --cluster_dns="10.100.0.10" \
+        --cluster_domain="cluster.local" \
         --port="$KUBELET_PORT" >"${KUBELET_LOG}" 2>&1 &
       KUBELET_PID=$!
     else
